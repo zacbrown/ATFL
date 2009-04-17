@@ -6,6 +6,7 @@
 package org.atfl.runtime;
 import java.io.FileNotFoundException;
 import java.util.Stack;
+import org.atfl.exception.ATFLRuntimeException;
 import org.atfl.runtime.ControlNode.OpCode;
 import org.atfl.runtime.ControlNode.Type;
 import org.atfl.runtime.parser.ATFLParser;
@@ -39,7 +40,24 @@ public class ATFLRuntime {
         }
         catch (FileNotFoundException e) { e.printStackTrace(); }
 
+        reg_c.push(new ControlNode(Type.INSTR, OpCode.STOP));
+        reg_c.push(new ControlNode(Type.INSTR, OpCode.ADD));
+        reg_c.push(new ControlNode(Type.NUM, new Double(3)));
+        reg_c.push(new ControlNode(Type.INSTR, OpCode.LDC));
+        reg_c.push(new ControlNode(Type.NUM, new Double(8)));
+        reg_c.push(new ControlNode(Type.INSTR, OpCode.LDC));
+        dumpRegisters();
         this.execute();
+    }
+
+    public ATFLRuntime(Stack<ControlNode> reg_s, Stack<ControlNode> reg_e,
+            Stack<ControlNode> reg_c, Stack<ControlNode> reg_d) {
+            this.reg_s = reg_s;
+            this.reg_e = reg_e;
+            this.reg_c = reg_c;
+            this.reg_d = reg_d;
+
+            this.execute();
     }
 
     public static void main(String args[]) {
@@ -57,30 +75,8 @@ public class ATFLRuntime {
             Type n_type = n.getType();
 
             if (n_type == Type.INSTR) {
-                OpCode instr = n.getInstruction();
-
-                if (instr.equals(OpCode.SEL)) { instrSEL(); }
-                if (instr.equals(OpCode.JOIN)) { instrJOIN(); }
-                if (instr.equals(OpCode.ADD)) { instrADD(); }
-                if (instr.equals(OpCode.SUB)) { instrSUB(); }
-                if (instr.equals(OpCode.MUL)) { instrMUL(); }
-                if (instr.equals(OpCode.DIV)) { instrDIV(); }
-                if (instr.equals(OpCode.POW)) { instrPOW(); }
-                if (instr.equals(OpCode.REM)) { instrREM(); }
-                if (instr.equals(OpCode.EQ)) { instrEQ(); }
-                if (instr.equals(OpCode.LEQ)) { instrLEQ(); }
-                if (instr.equals(OpCode.ATOM)) { instrATOM(); }
-                if (instr.equals(OpCode.AP)) { instrAP(); }
-                if (instr.equals(OpCode.RAP)) { instrRAP(); }
-                if (instr.equals(OpCode.LD)) { instrLD(); }
-                if (instr.equals(OpCode.LDC)) { instrLDC(); }
-                if (instr.equals(OpCode.LDF)) { instrLDF(); }
-                if (instr.equals(OpCode.RTN)) { instrRTN(); }
-                if (instr.equals(OpCode.DUM)) { instrDUM(); }
-                if (instr.equals(OpCode.CONS)) { instrCONS(); }
-                if (instr.equals(OpCode.CAR)) { instrCAR(); }
-                if (instr.equals(OpCode.CDR)) { instrCDR(); }
-                if (instr.equals(OpCode.STOP)) { break; }
+                try { n.exec(this); }
+                catch (ATFLRuntimeException ex) { ex.printStackTrace(); }
             }
         }
     }
@@ -92,165 +88,13 @@ public class ATFLRuntime {
         System.out.println("D:" + reg_d);
     }
 
-    private void instrSEL() {
+    public void pushStack(ControlNode n) { reg_s.push(n); }
+    public void pushEnv(ControlNode n) { reg_e.push(n); }
+    public void pushControl(ControlNode n) { reg_c.push(n); }
+    public void pushDump(ControlNode n) { reg_d.push(n); }
+    public ControlNode popStack() { return reg_s.pop(); }
+    public ControlNode popEnv() { return reg_e.pop(); }
+    public ControlNode popControl() { return reg_c.pop(); }
+    public ControlNode popDump() { return reg_d.pop(); }
 
-    }
-
-    private void instrJOIN() {
-
-    }
-
-    private void instrADD() {
-        ControlNode op_1 = reg_s.pop();
-        ControlNode op_2 = reg_s.pop();
-        Type t_1 = op_1.getType();
-        Type t_2 = op_2.getType();
-        if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
-            throw new ArithmeticException("Addition must be performed on type NUM: " +
-                    op_2 + " + " + op_1);
-        }
-
-        double val_1 = ((Double)op_1.getValue()).doubleValue();
-        double val_2 = ((Double)op_2.getValue()).doubleValue();
-
- 
-        reg_s.push(new ControlNode(Type.NUM, new Double(val_2 + val_1)));
-    }
-
-    private void instrSUB() {
-        ControlNode op_1 = reg_s.pop();
-        ControlNode op_2 = reg_s.pop();
-        Type t_1 = op_1.getType();
-        Type t_2 = op_2.getType();
-        if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
-            throw new ArithmeticException("Subtraction must be performed on type NUM: " +
-                    op_2 + " - " + op_1);
-        }
-
-        double val_1 = ((Double)op_1.getValue()).doubleValue();
-        double val_2 = ((Double)op_2.getValue()).doubleValue();
-
-
-        reg_s.push(new ControlNode(Type.NUM, new Double(val_2 - val_1)));
-    }
-
-    private void instrMUL() {
-        ControlNode op_1 = reg_s.pop();
-        ControlNode op_2 = reg_s.pop();
-        Type t_1 = op_1.getType();
-        Type t_2 = op_2.getType();
-        if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
-            throw new ArithmeticException("Multiplication must be performed on type NUM: " +
-                    op_2 + " * " + op_1);
-        }
-
-        double val_1 = ((Double)op_1.getValue()).doubleValue();
-        double val_2 = ((Double)op_2.getValue()).doubleValue();
-
-
-        reg_s.push(new ControlNode(Type.NUM, new Double(val_2 * val_1)));
-    }
-
-    private void instrDIV() {
-        ControlNode op_1 = reg_s.pop();
-        ControlNode op_2 = reg_s.pop();
-        Type t_1 = op_1.getType();
-        Type t_2 = op_2.getType();
-        if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
-            throw new ArithmeticException("Division must be performed on type NUM: " +
-                    op_2 + " / " + op_1);
-        }
-
-        double val_1 = ((Double)op_1.getValue()).doubleValue();
-        double val_2 = ((Double)op_2.getValue()).doubleValue();
-
-
-        reg_s.push(new ControlNode(Type.NUM, new Double(val_2 / val_1)));
-    }
-
-    private void instrPOW() {
-        ControlNode op_1 = reg_s.pop();
-        ControlNode op_2 = reg_s.pop();
-        Type t_1 = op_1.getType();
-        Type t_2 = op_2.getType();
-        if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
-            throw new ArithmeticException("Exponentiation must be performed on type NUM: " +
-                    op_2 + " ** " + op_1);
-        }
-
-        double val_1 = ((Double)op_1.getValue()).doubleValue();
-        double val_2 = ((Double)op_2.getValue()).doubleValue();
-
-
-        reg_s.push(new ControlNode(Type.NUM, new Double(Math.pow(val_2, val_1))));
-    }
-
-    private void instrREM() {
-        ControlNode op_1 = reg_s.pop();
-        ControlNode op_2 = reg_s.pop();
-        Type t_1 = op_1.getType();
-        Type t_2 = op_2.getType();
-        if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
-            throw new ArithmeticException("Modulo must be performed on type NUM: " +
-                    op_2 + " % " + op_1);
-        }
-
-        double val_1 = ((Double)op_1.getValue()).doubleValue();
-        double val_2 = ((Double)op_2.getValue()).doubleValue();
-
-
-        reg_s.push(new ControlNode(Type.NUM, new Double(val_2 % val_1)));
-    }
-
-    private void instrEQ() {
-
-    }
-
-    private void instrLEQ() {
-
-    }
-
-    private void instrATOM() {
-        
-    }
-
-    private void instrAP() {
-
-    }
-
-    private void instrRAP() {
-
-    }
-
-    private void instrLD() {
-
-    }
-
-    private void instrLDC() {
-        reg_s.push(reg_c.pop());
-    }
-
-    private void instrLDF() {
-
-    }
-
-    private void instrRTN() {
-
-    }
-
-    private void instrDUM() {
-
-    }
-
-    private void instrCONS() {
-
-    }
-
-    private void instrCAR() {
-
-    }
-
-    private void instrCDR() {
-
-    }
 }
