@@ -6,11 +6,13 @@
 package org.atfl.runtime;
 import java.io.FileNotFoundException;
 import java.util.Stack;
+import java.util.Vector;
 import org.atfl.exception.ATFLRuntimeException;
 import org.atfl.runtime.ControlNode.OpCode;
 import org.atfl.runtime.ControlNode.Type;
 import org.atfl.runtime.parser.ATFLParser;
 import org.atfl.runtime.parser.Node;
+import org.atfl.util.SymbolTable;
 import org.atfl.util.TokenReader;
 
 /**
@@ -20,15 +22,15 @@ import org.atfl.util.TokenReader;
 public class ATFLRuntime {
 
     private Stack<ControlNode> reg_s;
-    private Stack<ControlNode> reg_e;
+    private Stack reg_e;
     private Stack<ControlNode> reg_c;
-    private Stack<ControlNode> reg_d;
+    private Stack reg_d;
 
     public ATFLRuntime(String filename) {
         reg_s = new Stack<ControlNode>();
-        reg_e = new Stack<ControlNode>();
+        reg_e = new Stack();
         reg_c = new Stack<ControlNode>();
-        reg_d = new Stack<ControlNode>();
+        reg_d = new Stack();
 
         try {
             TokenReader tok = new TokenReader(filename);
@@ -40,17 +42,27 @@ public class ATFLRuntime {
         }
         catch (FileNotFoundException e) { e.printStackTrace(); }
 
+        Vector<ControlNode> funcNodes = new Vector<ControlNode>();
+        ControlNode func = new ControlNode(Type.LIST, funcNodes);
+        Vector<ControlNode> funcDefNodes = new Vector<ControlNode>();
+        ControlNode funcDef = new ControlNode(Type.LIST, funcDefNodes);
+        funcDefNodes.add(new ControlNode(Type.INSTR, OpCode.ADD));
+        funcDefNodes.add(new ControlNode(Type.NUM, new Double(2)));
+        funcDefNodes.add(new ControlNode(Type.INSTR, OpCode.LDC));
+        funcDefNodes.add(new ControlNode(Type.NUM, new Double(13)));
+        funcDefNodes.add(new ControlNode(Type.INSTR, OpCode.LDC));
+        funcNodes.add(funcDef);
+        funcNodes.add(new ControlNode(Type.LIST, new Vector<ControlNode>()));
         reg_c.push(new ControlNode(Type.INSTR, OpCode.STOP));
-        reg_c.push(new ControlNode(Type.INSTR, OpCode.ADD));
-        reg_c.push(new ControlNode(Type.NUM, new Double(3)));
-        reg_c.push(new ControlNode(Type.INSTR, OpCode.LDC));
-        reg_c.push(new ControlNode(Type.NUM, new Double(8)));
-        reg_c.push(new ControlNode(Type.INSTR, OpCode.LDC));
+        reg_c.push(new ControlNode(Type.INSTR, OpCode.AP));
+        reg_c.push(func);
+        reg_c.push(new ControlNode(Type.INSTR, OpCode.LDF));
         dumpRegisters();
         this.execute();
+        dumpRegisters();
     }
 
-    public ATFLRuntime(Stack<ControlNode> reg_s, Stack<ControlNode> reg_e,
+    public ATFLRuntime(Stack<ControlNode> reg_s, Stack<SymbolTable> reg_e,
             Stack<ControlNode> reg_c, Stack<ControlNode> reg_d) {
             this.reg_s = reg_s;
             this.reg_e = reg_e;
@@ -88,13 +100,38 @@ public class ATFLRuntime {
         System.out.println("D:" + reg_d);
     }
 
+    public Object peekEnv() { return reg_e.peek(); }
+    public Stack<SymbolTable> cloneEnv() { return (Stack<SymbolTable>)reg_e.clone(); }
     public void pushStack(ControlNode n) { reg_s.push(n); }
-    public void pushEnv(ControlNode n) { reg_e.push(n); }
+    public void pushEnv(Object t) { reg_e.push(t); }
     public void pushControl(ControlNode n) { reg_c.push(n); }
-    public void pushDump(ControlNode n) { reg_d.push(n); }
+    public void pushDump(Object n) { reg_d.push(n); }
     public ControlNode popStack() { return reg_s.pop(); }
-    public ControlNode popEnv() { return reg_e.pop(); }
+    public Object popEnv() { return reg_e.pop(); }
     public ControlNode popControl() { return reg_c.pop(); }
-    public ControlNode popDump() { return reg_d.pop(); }
-
+    public Object popDump() { return reg_d.pop(); }
+    public boolean stackIsEmpty() { return reg_s.isEmpty(); }
+    public boolean envIsEmpty() { return reg_e.isEmpty(); }
+    public boolean controlIsEmpty() { return reg_c.isEmpty(); }
+    public boolean dumpIsEmpty() { return reg_d.isEmpty(); }
+    public Stack swapStack(Stack newStack) {
+        Stack oldStack = reg_s;
+        reg_s = newStack;
+        return oldStack;
+    }
+    public Stack swapEnv(Stack newEnv) {
+        Stack oldEnv = reg_e;
+        reg_e = newEnv;
+        return oldEnv;
+    }
+    public Stack<ControlNode> swapControl(Stack<ControlNode> newControl) {
+        Stack<ControlNode> oldControl = reg_c;
+        reg_c = newControl;
+        return oldControl;
+    }
+    public Stack swapDump(Stack newDump) {
+        Stack oldDump = reg_d;
+        reg_d = newDump;
+        return oldDump;
+    }
 }

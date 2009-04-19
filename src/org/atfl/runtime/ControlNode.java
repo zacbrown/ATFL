@@ -1,11 +1,14 @@
 package org.atfl.runtime;
 
-import java.util.ArrayList;
+import java.util.Vector;
 import java.util.HashMap;
+import java.util.Stack;
 import org.atfl.exception.ATFLRuntimeException;
+import org.atfl.util.SymbolTable;
 
 public class ControlNode {
-    private ArrayList<ControlNode> next;
+    private Vector<ControlNode> next;
+    private Stack<SymbolTable> env = null;
     private Object value = null;
     private OpCode instr = null;
     private Type type;
@@ -20,6 +23,9 @@ public class ControlNode {
         instructionTable.put(OpCode.POW, new POW());
         instructionTable.put(OpCode.REM, new REM());
         instructionTable.put(OpCode.LDC, new LDC());
+        instructionTable.put(OpCode.LD, new LD());
+        instructionTable.put(OpCode.LDF, new LDF());
+        instructionTable.put(OpCode.AP, new AP());
         instructionTable.put(OpCode.STOP, new STOP());
     }
 
@@ -56,15 +62,20 @@ public class ControlNode {
     }
 
     public ControlNode(Type tag, OpCode builtInFunc) {
-        next = new ArrayList<ControlNode>();
+        next = new Vector<ControlNode>();
         this.type = tag;
         this.instr = builtInFunc;
     }
 
     public ControlNode(Type tag, Object value) {
-        next = new ArrayList<ControlNode>();
+        next = new Vector<ControlNode>();
         this.type = tag;
         this.value = value;
+    }
+
+    public ControlNode(Type tag, Vector<ControlNode> next) {
+        this.next = next;
+        this.type = tag;
     }
 
     public void exec(ATFLRuntime runtime) throws ATFLRuntimeException {
@@ -74,7 +85,9 @@ public class ControlNode {
                     + instr + "'");
         op.exec(runtime);
     }
-    public ArrayList<ControlNode> getSubNodes() { return next; }
+    public void setEnv(Stack<SymbolTable> env) { this.env = env; }
+    public Stack<SymbolTable> getEnv() { return env; }
+    public Vector<ControlNode> getSubNodes() { return next; }
     public Type getType() { return type; }
     public OpCode getInstruction() { return instr; }
     public Object getValue() { return value; }
@@ -85,7 +98,14 @@ public class ControlNode {
         String ret = "";
         ret += type.toString() + ":";
         if (type.equals(Type.INSTR)) ret += instr.toString();
-        else ret += value.toString();
+        else if (type.equals(Type.LIST)) {
+            for (int i = 0; i < next.size(); i++) {
+                next.get(i).toString();
+            }
+        }
+        else if (value != null) {
+            ret += value.toString();
+        }
 
         return ret;
     }
@@ -225,9 +245,45 @@ public class ControlNode {
         }
     }
 
+    public static class LD implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            SymbolTable curEnv = (SymbolTable)runtime.peekEnv();
+            runtime.pushStack(curEnv.get(runtime.popControl()));
+        }
+    }
+
     public static class LDC implements Instruction {
         public void exec(ATFLRuntime runtime) {
             runtime.pushStack(runtime.popControl());
+        }
+    }
+
+    public static class LDF implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode n = runtime.popControl();
+            Stack<SymbolTable> oldEnv = runtime.cloneEnv();
+            Vector<ControlNode> nodes = n.getSubNodes();
+            ControlNode funDef = nodes.get(0);
+            ControlNode funParams = nodes.get(1);
+            funDef.setEnv(oldEnv);
+            runtime.pushStack(funParams);
+            runtime.pushStack(funDef);
+        }
+    }
+
+    public static class AP implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode newControlList = runtime.popStack();
+            Stack<SymbolTable> newEnv = newControlList.getEnv();
+            Stack<SymbolTable> oldEnv = runtime.swapEnv(newEnv);
+            runtime.pushEnv(runtime.popStack());
+            Stack<ControlNode> newControl = new Stack<ControlNode>();
+            newControl.addAll(0, newControlList.getSubNodes());
+            Stack<ControlNode> oldControl = runtime.swapControl(newControl);
+            Stack oldStack = runtime.swapStack(new Stack());
+            runtime.pushDump(oldControl);
+            runtime.pushDump(oldEnv);
+            runtime.pushDump(oldStack);
         }
     }
 

@@ -1,50 +1,29 @@
 package org.atfl.util;
 
 import java.util.HashMap;
-import java.util.Stack;
+import org.atfl.exception.SymbolException;
+import org.atfl.runtime.ControlNode;
 
 public class SymbolTable {
-    private HashMap<String, Stack<Symbol>> symbols;
+    private HashMap<ControlNode, ControlNode> symbols;
+    private ControlNode associatedBlock;
+    private SymbolTable parent;
 
-    public SymbolTable() {
-        symbols = new HashMap<String, Stack<Symbol>>();
+    public SymbolTable(ControlNode associatedBlock, SymbolTable parent) {
+        this.associatedBlock = associatedBlock;
+        this.parent = parent;
+        symbols = new HashMap<ControlNode, ControlNode>();
     }
 
-    public void add(String ref, Symbol.Type type, Object value) {
-        /* we've already got one of these, push onto our stack */
-        if (symbols.containsKey(ref)) {
-            Stack<Symbol> cur_elems = symbols.get(ref);
-            cur_elems.push(new Symbol(type, value));
+    public void add(ControlNode n, ControlNode value) throws SymbolException {
+        if (symbols.containsKey(n)) {
+            throw new SymbolException("Cannot redefine symbol '" + n.toString() + "'");
         }
-        else {
-            Stack<Symbol> new_stack = new Stack<Symbol>();
-            new_stack.push(new Symbol(type, value));
-            symbols.put(ref, new_stack);
-        }
+
+        symbols.put(n, value);
     }
 
-    public Symbol get(String ref) {
-        if (symbols.containsKey(ref)) {
-            return symbols.get(ref).peek();
-        }
-
-        return null;
-    }
-
-    public Symbol remove(String ref) {
-        if (symbols.containsKey(ref)) {
-            Stack<Symbol> cur_elems = symbols.get(ref);
-            if (cur_elems.size() == 1) {
-                Symbol ret = cur_elems.peek();
-                symbols.remove(ref);
-                return ret;
-            }
-            else {
-                return cur_elems.pop();
-            }
-        }
-        /* if this happens, its probably an error */
-        return null;
-    }
-
+    public ControlNode getAssociatedBlock() { return associatedBlock; }
+    public SymbolTable getParent() { return parent; }
+    public ControlNode get(ControlNode n) { return symbols.get(n); }
 }
