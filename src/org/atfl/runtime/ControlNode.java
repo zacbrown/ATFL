@@ -99,9 +99,15 @@ public class ControlNode {
         ret += type.toString() + ":";
         if (type.equals(Type.INSTR)) ret += instr.toString();
         else if (type.equals(Type.LIST)) {
-            for (int i = 0; i < next.size(); i++) {
-                next.get(i).toString();
+            if (next.size() != 0) {
+                ret += "(";
+                for (int i = 0; i < next.size()-1; i++) {
+                    ret += next.get(i).toString() + ",";
+                }
+                ret += next.get(next.size() - 1).toString();
+                ret += ")";
             }
+            else { ret += "()"; }
         }
         else if (value != null) {
             ret += value.toString();
