@@ -355,6 +355,39 @@ public class ControlNode {
         }
     }
 
+    public static class EQ implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode val_1 = runtime.popStack();
+            ControlNode val_2 = runtime.popStack();
+            if (val_1.getType().equals(Type.LIST)) {
+                runtime.pushStack(new ControlNode(Type.BOOL, equalsList(val_1, val_2)));
+            }
+            else {
+                if (val_1.getValue().equals(val_2.getValue())) {
+                    runtime.pushStack(new ControlNode(Type.BOOL, Boolean.TRUE));
+                }
+                else {
+                    runtime.pushStack(new ControlNode(Type.BOOL, Boolean.FALSE));
+                }
+            }
+        }
+
+        private Boolean equalsList(ControlNode v1, ControlNode v2) {
+            Vector<ControlNode> n1 = v1.getSubNodes();
+            Vector<ControlNode> n2 = v2.getSubNodes();
+            int n1_size = n1.size();
+            if (n1_size != n2.size()) { return Boolean.FALSE; }
+
+            for (int i = 0; i < n1_size; i++) {
+                if (n1.get(i).getValue().equals(n2.get(i).getValue()) != true) {
+                    return Boolean.FALSE;
+                }
+            }
+
+            return Boolean.TRUE;
+        }
+    }
+
     public static class STOP implements Instruction {
         public void exec(ATFLRuntime runtime) {
             runtime.dumpRegisters();
