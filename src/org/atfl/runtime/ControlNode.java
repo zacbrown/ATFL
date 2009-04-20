@@ -28,6 +28,7 @@ public class ControlNode {
         instructionTable.put(OpCode.AP, new AP());
         instructionTable.put(OpCode.CAR, new CAR());
         instructionTable.put(OpCode.CDR, new CDR());
+        instructionTable.put(OpCode.EQ, new EQ());
         instructionTable.put(OpCode.ATOM, new ATOM());
         instructionTable.put(OpCode.STOP, new STOP());
     }
