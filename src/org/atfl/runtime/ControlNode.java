@@ -29,6 +29,7 @@ public class ControlNode {
         instructionTable.put(OpCode.CAR, new CAR());
         instructionTable.put(OpCode.CDR, new CDR());
         instructionTable.put(OpCode.EQ, new EQ());
+        instructionTable.put(OpCode.LEQ, new LEQ());
         instructionTable.put(OpCode.ATOM, new ATOM());
         instructionTable.put(OpCode.RTN, new RTN());
         instructionTable.put(OpCode.STOP, new STOP());
@@ -402,6 +403,34 @@ public class ControlNode {
             }
 
             return Boolean.TRUE;
+        }
+    }
+
+    private static class LEQ implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode n_1 = runtime.popStack();
+            ControlNode n_2 = runtime.popStack();
+            Object v_1 = n_1.getValue();
+            Object v_2 = n_2.getValue();
+
+            if (n_1.getType().equals(Type.SYMBOL)) {
+                SymbolTable env = (SymbolTable)runtime.peekEnv();
+                n_1 = env.get((String)v_1);
+                v_1 = n_1.getValue();
+            }
+
+            if (n_2.getType().equals(Type.SYMBOL)) {
+                SymbolTable env = (SymbolTable)runtime.peekEnv();
+                n_2 = env.get((String)v_1);
+                v_2 = n_2.getValue();
+            }
+
+            if (((Comparable)v_2).compareTo((Comparable)v_1) == 1) {
+                runtime.pushStack(new ControlNode(Type.BOOL, Boolean.FALSE));
+            }
+            else {
+                runtime.pushStack(new ControlNode(Type.BOOL, Boolean.TRUE));
+            }
         }
     }
 
