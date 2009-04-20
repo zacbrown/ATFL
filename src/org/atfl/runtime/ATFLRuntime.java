@@ -6,9 +6,7 @@
 package org.atfl.runtime;
 import java.io.FileNotFoundException;
 import java.util.Stack;
-import java.util.Vector;
 import org.atfl.exception.ATFLRuntimeException;
-import org.atfl.runtime.ControlNode.OpCode;
 import org.atfl.runtime.ControlNode.Type;
 import org.atfl.runtime.parser.ATFLParser;
 import org.atfl.runtime.parser.Node;
@@ -42,24 +40,7 @@ public class ATFLRuntime {
         }
         catch (FileNotFoundException e) { e.printStackTrace(); }
 
-        Vector<ControlNode> funcNodes = new Vector<ControlNode>();
-        ControlNode func = new ControlNode(Type.LIST, funcNodes);
-        Vector<ControlNode> funcDefNodes = new Vector<ControlNode>();
-        ControlNode funcDef = new ControlNode(Type.LIST, funcDefNodes);
-        funcDefNodes.add(new ControlNode(Type.INSTR, OpCode.ADD));
-        funcDefNodes.add(new ControlNode(Type.NUM, new Double(2)));
-        funcDefNodes.add(new ControlNode(Type.INSTR, OpCode.LDC));
-        funcDefNodes.add(new ControlNode(Type.NUM, new Double(13)));
-        funcDefNodes.add(new ControlNode(Type.INSTR, OpCode.LDC));
-        funcNodes.add(funcDef);
-        funcNodes.add(new ControlNode(Type.LIST, new Vector<ControlNode>()));
-        reg_c.push(new ControlNode(Type.INSTR, OpCode.STOP));
-        reg_c.push(new ControlNode(Type.INSTR, OpCode.AP));
-        reg_c.push(func);
-        reg_c.push(new ControlNode(Type.INSTR, OpCode.LDF));
-        dumpRegisters();
         this.execute();
-        dumpRegisters();
     }
 
     public ATFLRuntime(Stack<ControlNode> reg_s, Stack<SymbolTable> reg_e,
