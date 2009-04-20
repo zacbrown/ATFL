@@ -28,6 +28,7 @@ public class ControlNode {
         instructionTable.put(OpCode.AP, new AP());
         instructionTable.put(OpCode.CAR, new CAR());
         instructionTable.put(OpCode.CDR, new CDR());
+        instructionTable.put(OpCode.ATOM, new ATOM());
         instructionTable.put(OpCode.STOP, new STOP());
     }
 
@@ -327,6 +328,30 @@ public class ControlNode {
             Vector<ControlNode> nodes = n.getSubNodes();
             runtime.pushStack(new ControlNode(Type.LIST,
                     new Vector<ControlNode>(nodes.subList(1, nodes.size()))));
+        }
+    }
+
+    public static class ATOM implements Instruction {
+        private static HashMap<Type, Boolean> validAtoms =
+                new HashMap<Type, Boolean>();
+        static {
+            validAtoms.put(Type.NUM, Boolean.TRUE);
+            validAtoms.put(Type.STR, Boolean.TRUE);
+            validAtoms.put(Type.LIST, Boolean.FALSE);
+            validAtoms.put(Type.BOOL, Boolean.TRUE);
+            validAtoms.put(Type.NIL, Boolean.TRUE);
+        }
+
+        public void exec(ATFLRuntime runtime) {
+            ControlNode n = runtime.popControl();
+            Type nType = n.getType();
+            if (nType.equals(Type.SYMBOL)) {
+                SymbolTable env = (SymbolTable)runtime.peekEnv();
+                n = env.get((String)n.getValue());
+                nType = n.getType();
+            }
+            Boolean isAtom = validAtoms.get(nType);
+            runtime.pushStack(new ControlNode(Type.BOOL, isAtom));
         }
     }
 
