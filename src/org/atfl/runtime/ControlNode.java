@@ -33,6 +33,9 @@ public class ControlNode {
         INSTR,
         NUM,
         STR,
+        BOOL,
+        SYMBOL,
+        NIL,
         LIST
     }
 
@@ -254,7 +257,7 @@ public class ControlNode {
     public static class LD implements Instruction {
         public void exec(ATFLRuntime runtime) {
             SymbolTable curEnv = (SymbolTable)runtime.peekEnv();
-            runtime.pushStack(curEnv.get(runtime.popControl()));
+            runtime.pushStack(curEnv.get((String)runtime.popControl().getValue()));
         }
     }
 
@@ -267,6 +270,11 @@ public class ControlNode {
     public static class LDF implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popControl();
+            Type nType = n.getType();
+            if (nType.equals(Type.SYMBOL)) {
+                SymbolTable env = (SymbolTable)runtime.peekEnv();
+                n = env.get((String)n.getValue());
+            }
             Stack<SymbolTable> oldEnv = runtime.cloneEnv();
             Vector<ControlNode> nodes = n.getSubNodes();
             ControlNode funDef = nodes.get(0);
