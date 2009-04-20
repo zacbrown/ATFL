@@ -27,6 +27,7 @@ public class ControlNode {
         instructionTable.put(OpCode.LDF, new LDF());
         instructionTable.put(OpCode.AP, new AP());
         instructionTable.put(OpCode.CAR, new CAR());
+        instructionTable.put(OpCode.CDR, new CDR());
         instructionTable.put(OpCode.STOP, new STOP());
     }
 
@@ -312,6 +313,20 @@ public class ControlNode {
             }
             Vector<ControlNode> nodes = n.getSubNodes();
             runtime.pushStack(nodes.get(0));
+        }
+    }
+
+    public static class CDR implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode n = runtime.popControl();
+            Type nType = n.getType();
+            if (nType.equals(Type.SYMBOL)) {
+                SymbolTable env = (SymbolTable)runtime.peekEnv();
+                n = env.get((String)n.getValue());
+            }
+            Vector<ControlNode> nodes = n.getSubNodes();
+            runtime.pushStack(new ControlNode(Type.LIST,
+                    new Vector<ControlNode>(nodes.subList(1, nodes.size()))));
         }
     }
 
