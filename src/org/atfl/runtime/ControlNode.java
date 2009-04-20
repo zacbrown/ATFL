@@ -343,7 +343,7 @@ public class ControlNode {
         }
 
         public void exec(ATFLRuntime runtime) {
-            ControlNode n = runtime.popControl();
+            ControlNode n = runtime.popStack();
             Type nType = n.getType();
             if (nType.equals(Type.SYMBOL)) {
                 SymbolTable env = (SymbolTable)runtime.peekEnv();
