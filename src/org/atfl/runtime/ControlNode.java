@@ -306,7 +306,7 @@ public class ControlNode {
 
     public static class CAR implements Instruction {
         public void exec(ATFLRuntime runtime) {
-            ControlNode n = runtime.popControl();
+            ControlNode n = runtime.popStack();
             Type nType = n.getType();
             if (nType.equals(Type.SYMBOL)) {
                 SymbolTable env = (SymbolTable)runtime.peekEnv();
@@ -319,7 +319,7 @@ public class ControlNode {
 
     public static class CDR implements Instruction {
         public void exec(ATFLRuntime runtime) {
-            ControlNode n = runtime.popControl();
+            ControlNode n = runtime.popStack();
             Type nType = n.getType();
             if (nType.equals(Type.SYMBOL)) {
                 SymbolTable env = (SymbolTable)runtime.peekEnv();
