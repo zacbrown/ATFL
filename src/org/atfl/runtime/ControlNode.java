@@ -361,7 +361,22 @@ public class ControlNode {
         public void exec(ATFLRuntime runtime) {
             ControlNode val_1 = runtime.popStack();
             ControlNode val_2 = runtime.popStack();
-            if (val_1.getType().equals(Type.LIST)) {
+            Type val_1_type = val_1.getType();
+            Type val_2_type = val_2.getType();
+
+            if (val_1_type.equals(Type.SYMBOL)) {
+                SymbolTable env = (SymbolTable)runtime.peekEnv();
+                val_1 = env.get((String)val_1.getValue());
+                val_1_type = val_1.getType();
+            }
+
+            if (val_2_type.equals(Type.SYMBOL)) {
+                SymbolTable env = (SymbolTable)runtime.peekEnv();
+                val_2 = env.get((String)val_1.getValue());
+                val_2_type = val_2.getType();
+            }
+
+            if (val_1_type.equals(Type.LIST)) {
                 runtime.pushStack(new ControlNode(Type.BOOL, equalsList(val_1, val_2)));
             }
             else {
