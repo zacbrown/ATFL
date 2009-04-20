@@ -30,6 +30,7 @@ public class ControlNode {
         instructionTable.put(OpCode.CDR, new CDR());
         instructionTable.put(OpCode.EQ, new EQ());
         instructionTable.put(OpCode.ATOM, new ATOM());
+        instructionTable.put(OpCode.RTN, new RTN());
         instructionTable.put(OpCode.STOP, new STOP());
     }
 
@@ -386,6 +387,17 @@ public class ControlNode {
             }
 
             return Boolean.TRUE;
+        }
+    }
+
+    private static class RTN implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode retVal = runtime.popStack();
+
+            runtime.swapStack((Stack)runtime.popDump());
+            runtime.swapEnv((Stack)runtime.popDump());
+            runtime.swapControl((Stack)runtime.popDump());
+            runtime.pushStack(retVal);
         }
     }
 
