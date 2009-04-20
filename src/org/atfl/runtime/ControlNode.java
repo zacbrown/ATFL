@@ -203,7 +203,7 @@ public class ControlNode {
         }
     }
 
-    public static class DIV implements Instruction {
+    private static class DIV implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
@@ -221,7 +221,7 @@ public class ControlNode {
         }
     }
 
-    public static class POW implements Instruction {
+    private static class POW implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
@@ -239,7 +239,7 @@ public class ControlNode {
         }
     }
 
-    public static class REM implements Instruction {
+    private static class REM implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
@@ -257,20 +257,20 @@ public class ControlNode {
         }
     }
 
-    public static class LD implements Instruction {
+    private static class LD implements Instruction {
         public void exec(ATFLRuntime runtime) {
             SymbolTable curEnv = (SymbolTable)runtime.peekEnv();
             runtime.pushStack(curEnv.get((String)runtime.popControl().getValue()));
         }
     }
 
-    public static class LDC implements Instruction {
+    private static class LDC implements Instruction {
         public void exec(ATFLRuntime runtime) {
             runtime.pushStack(runtime.popControl());
         }
     }
 
-    public static class LDF implements Instruction {
+    private static class LDF implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popControl();
             Type nType = n.getType();
@@ -288,7 +288,7 @@ public class ControlNode {
         }
     }
     
-    public static class AP implements Instruction {
+    private static class AP implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode newControlList = runtime.popStack();
             Stack<SymbolTable> newEnv = newControlList.getEnv();
@@ -304,7 +304,7 @@ public class ControlNode {
         }
     }
 
-    public static class CAR implements Instruction {
+    private static class CAR implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popStack();
             Type nType = n.getType();
@@ -317,7 +317,7 @@ public class ControlNode {
         }
     }
 
-    public static class CDR implements Instruction {
+    private static class CDR implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popStack();
             Type nType = n.getType();
@@ -331,7 +331,7 @@ public class ControlNode {
         }
     }
 
-    public static class ATOM implements Instruction {
+    private static class ATOM implements Instruction {
         private static HashMap<Type, Boolean> validAtoms =
                 new HashMap<Type, Boolean>();
         static {
@@ -355,7 +355,7 @@ public class ControlNode {
         }
     }
 
-    public static class EQ implements Instruction {
+    private static class EQ implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode val_1 = runtime.popStack();
             ControlNode val_2 = runtime.popStack();
@@ -388,7 +388,7 @@ public class ControlNode {
         }
     }
 
-    public static class STOP implements Instruction {
+    private static class STOP implements Instruction {
         public void exec(ATFLRuntime runtime) {
             runtime.dumpRegisters();
             System.exit(0);
