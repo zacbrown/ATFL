@@ -26,6 +26,7 @@ public class ControlNode {
         instructionTable.put(OpCode.LD, new LD());
         instructionTable.put(OpCode.LDF, new LDF());
         instructionTable.put(OpCode.AP, new AP());
+        instructionTable.put(OpCode.CAR, new CAR());
         instructionTable.put(OpCode.STOP, new STOP());
     }
 
@@ -284,7 +285,7 @@ public class ControlNode {
             runtime.pushStack(funDef);
         }
     }
-
+    
     public static class AP implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode newControlList = runtime.popStack();
@@ -298,6 +299,19 @@ public class ControlNode {
             runtime.pushDump(oldControl);
             runtime.pushDump(oldEnv);
             runtime.pushDump(oldStack);
+        }
+    }
+
+    public static class CAR implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode n = runtime.popControl();
+            Type nType = n.getType();
+            if (nType.equals(Type.SYMBOL)) {
+                SymbolTable env = (SymbolTable)runtime.peekEnv();
+                n = env.get((String)n.getValue());
+            }
+            Vector<ControlNode> nodes = n.getSubNodes();
+            runtime.pushStack(nodes.get(0));
         }
     }
 
