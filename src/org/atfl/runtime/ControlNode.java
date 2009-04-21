@@ -384,15 +384,15 @@ public class ControlNode {
             ControlNode val_2 = runtime.popStack();
             Type val_1_type = val_1.getType();
             Type val_2_type = val_2.getType();
+            SymbolTable env = (SymbolTable)runtime.peekEnv();
+
 
             if (val_1_type.equals(Type.SYMBOL)) {
-                SymbolTable env = (SymbolTable)runtime.peekEnv();
                 val_1 = env.get((String)val_1.getValue());
                 val_1_type = val_1.getType();
             }
 
             if (val_2_type.equals(Type.SYMBOL)) {
-                SymbolTable env = (SymbolTable)runtime.peekEnv();
                 val_2 = env.get((String)val_1.getValue());
                 val_2_type = val_2.getType();
             }
@@ -432,15 +432,14 @@ public class ControlNode {
             ControlNode n_2 = runtime.popStack();
             Object v_1 = n_1.getValue();
             Object v_2 = n_2.getValue();
+            SymbolTable env = (SymbolTable)runtime.peekEnv();
 
             if (n_1.getType().equals(Type.SYMBOL)) {
-                SymbolTable env = (SymbolTable)runtime.peekEnv();
                 n_1 = env.get((String)v_1);
                 v_1 = n_1.getValue();
             }
 
             if (n_2.getType().equals(Type.SYMBOL)) {
-                SymbolTable env = (SymbolTable)runtime.peekEnv();
                 n_2 = env.get((String)v_1);
                 v_2 = n_2.getValue();
             }
