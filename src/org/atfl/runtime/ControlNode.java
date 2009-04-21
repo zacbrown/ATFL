@@ -27,6 +27,7 @@ public class ControlNode {
         instructionTable.put(OpCode.LDF, new LDF());
         instructionTable.put(OpCode.AP, new AP());
         instructionTable.put(OpCode.SEL, new SEL());
+        instructionTable.put(OpCode.JOIN, new JOIN());
         instructionTable.put(OpCode.CAR, new CAR());
         instructionTable.put(OpCode.CDR, new CDR());
         instructionTable.put(OpCode.CONS, new CONS());
@@ -324,6 +325,12 @@ public class ControlNode {
             }
 
             runtime.pushDump(runtime.swapControl(newControl));
+        }
+    }
+
+    private static class JOIN implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            runtime.swapControl((Stack<ControlNode>)runtime.popDump());
         }
     }
 
