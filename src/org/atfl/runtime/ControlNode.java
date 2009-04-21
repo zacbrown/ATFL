@@ -26,6 +26,7 @@ public class ControlNode {
         instructionTable.put(OpCode.LD, new LD());
         instructionTable.put(OpCode.LDF, new LDF());
         instructionTable.put(OpCode.AP, new AP());
+        instructionTable.put(OpCode.SEL, new SEL());
         instructionTable.put(OpCode.CAR, new CAR());
         instructionTable.put(OpCode.CDR, new CDR());
         instructionTable.put(OpCode.CONS, new CONS());
@@ -305,6 +306,24 @@ public class ControlNode {
             runtime.pushDump(oldControl);
             runtime.pushDump(oldEnv);
             runtime.pushDump(oldStack);
+        }
+    }
+
+    private static class SEL implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode val = runtime.popStack();
+            ControlNode controlTrue = runtime.popControl();
+            ControlNode controlFalse = runtime.popControl();
+            Stack<ControlNode> newControl = null;
+
+            if (val.getValue().equals(Boolean.TRUE)) {
+                newControl = (Stack<ControlNode>) new Vector(controlTrue.getSubNodes());
+            }
+            else {
+                newControl = (Stack<ControlNode>) new Vector(controlFalse.getSubNodes());
+            }
+
+            runtime.pushDump(runtime.swapControl(newControl));
         }
     }
 
