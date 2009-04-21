@@ -28,6 +28,7 @@ public class ControlNode {
         instructionTable.put(OpCode.AP, new AP());
         instructionTable.put(OpCode.CAR, new CAR());
         instructionTable.put(OpCode.CDR, new CDR());
+        instructionTable.put(OpCode.CONS, new CONS());
         instructionTable.put(OpCode.EQ, new EQ());
         instructionTable.put(OpCode.LEQ, new LEQ());
         instructionTable.put(OpCode.ATOM, new ATOM());
@@ -331,6 +332,25 @@ public class ControlNode {
             Vector<ControlNode> nodes = n.getSubNodes();
             runtime.pushStack(new ControlNode(Type.LIST,
                     new Vector<ControlNode>(nodes.subList(1, nodes.size()))));
+        }
+    }
+
+    private static class CONS implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode elem = runtime.popStack();
+            ControlNode list = runtime.popStack();
+            SymbolTable env = (SymbolTable)runtime.peekEnv();
+
+            if (elem.getType().equals(Type.SYMBOL)) {
+                elem = env.get((String)elem.getValue());
+            }
+
+            if (elem.getType().equals(Type.SYMBOL)) {
+                list = env.get((String)list.getValue());
+            }
+
+            list.getSubNodes().add(0, elem);
+            runtime.pushStack(list);
         }
     }
 
