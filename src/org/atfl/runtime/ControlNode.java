@@ -22,6 +22,7 @@ public class ControlNode {
         instructionTable.put(OpCode.DIV, new DIV());
         instructionTable.put(OpCode.POW, new POW());
         instructionTable.put(OpCode.REM, new REM());
+        instructionTable.put(OpCode.PRINT, new PRINT());
         instructionTable.put(OpCode.LDC, new LDC());
         instructionTable.put(OpCode.LD, new LD());
         instructionTable.put(OpCode.LDF, new LDF());
@@ -70,6 +71,7 @@ public class ControlNode {
         REM,  // remainder
         POW,  // power (raise number to)
         LEQ,  // less than
+        PRINT,// print top item on stack
         STOP  // stop
     }
 
@@ -260,6 +262,19 @@ public class ControlNode {
             double val_2 = ((Double) op_2.getValue()).doubleValue();
 
             runtime.pushStack(new ControlNode(Type.NUM, new Double(val_2 % val_1)));
+        }
+    }
+
+    private static class PRINT implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode n = runtime.popStack();
+            SymbolTable env = (SymbolTable)runtime.peekEnv();
+
+            if (n.getType().equals(Type.SYMBOL)) {
+                n = (ControlNode)env.get((String)n.getValue());
+            }
+
+            System.out.println(n.getValue());
         }
     }
 
