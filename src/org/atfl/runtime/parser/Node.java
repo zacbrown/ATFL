@@ -31,6 +31,7 @@ public class Node {
         REM,   // remainder
         POW,   // power (raise number to)
         LEQ,   // less than
+        PRINT, // print
         STOP   // stop
     }
 

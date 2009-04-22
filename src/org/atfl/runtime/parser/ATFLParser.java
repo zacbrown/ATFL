@@ -94,6 +94,27 @@ public class ATFLParser {
 
     }
 
+    private void parseQuotes(Node n) throws ParserException, TokenException {
+        String s = "";
+
+        s = tok_reader.getNextToken();
+        if (!s.equals("\"")) {
+            throw new ParserException("Expected \" but found '" + s +
+                    "' at line:token " + tok_reader.getLineNumber() +
+                    ":" + tok_reader.getTokenNumber());
+        }
+        s += tok_reader.getNextToken();
+        String t = tok_reader.getNextToken();
+
+        if (!t.equals("\"")) {
+            throw new ParserException("Expected \" but found '" + s +
+                    "' at line:token " + tok_reader.getLineNumber() +
+                    ":" + tok_reader.getTokenNumber());
+        }
+        s += t;
+        n.addSubNode(new Node(NodeTag.ATOM, s));
+    }
+
     private Node parseTop() throws ParserException, TokenException {
         Node n = new Node(NodeTag.LIST);
         int open_brackets = 0;
@@ -219,6 +240,17 @@ public class ATFLParser {
                 else if (s.equals("leq")) {
                     Node tmp_n = new Node(NodeTag.BUILTIN, BuiltIn.LEQ);
                     parse2AtomOrList(tmp_n);
+                    n.addSubNode(tmp_n);
+                }
+                else if (s.equals("print")) {
+                    Node tmp_n = new Node(NodeTag.BUILTIN, BuiltIn.PRINT);
+                    if (tok_reader.getNextToken().equals("\"")) {
+                        tok_reader.putBackToken();
+                        parseQuotes(tmp_n);
+                    }
+                    else {
+                        parse1AtomOrList(tmp_n);
+                    }
                     n.addSubNode(tmp_n);
                 }
                 else {
