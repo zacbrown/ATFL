@@ -1,9 +1,9 @@
 package org.atfl.runtime.parser;
 
-import java.util.ArrayList;
+import java.util.Vector;
 
-public class Node {
-    private ArrayList<Node> next;
+public class ParserNode {
+    private Vector<ParserNode> next;
     private Object value = null;
     private BuiltIn funCall = null;
     private NodeTag tag;
@@ -16,7 +16,7 @@ public class Node {
     }
 
     public static enum BuiltIn {
-        FUN, // define function
+        FUN,   // define function
         SET,   // set value to a label
         CAR,   // take car of item on top of stack
         CDR,   // take cdr of item on top of stack
@@ -35,25 +35,25 @@ public class Node {
         STOP   // stop
     }
 
-    public Node(NodeTag tag) {
-        next = new ArrayList<Node>();
+    public ParserNode(NodeTag tag) {
+        next = new Vector<ParserNode>();
         this.tag = tag;
     }
 
-    public Node(NodeTag tag, BuiltIn builtInFunc) {
-        next = new ArrayList<Node>();
+    public ParserNode(NodeTag tag, BuiltIn builtInFunc) {
+        next = new Vector<ParserNode>();
         this.tag = tag;
         this.funCall = builtInFunc;
     }
 
-    public Node(NodeTag tag, Object value) {
-        next = new ArrayList<Node>();
+    public ParserNode(NodeTag tag, Object value) {
+        next = new Vector<ParserNode>();
         this.tag = tag;
         this.value = value;
     }
 
-    public Node(NodeTag tag, Node subNode) {
-        next = new ArrayList<Node>();
+    public ParserNode(NodeTag tag, ParserNode subNode) {
+        next = new Vector<ParserNode>();
         addSubNode(subNode);
         this.tag = tag;
     }
@@ -61,8 +61,8 @@ public class Node {
     public NodeTag getTag() { return tag; }
     public BuiltIn getBuiltInFunction() { return funCall; }
     public Object getValue() { return value; }
-    public ArrayList<Node> getSubNodes() { return next; }
-    public void addSubNode(Node n) { next.add(n); }
+    public Vector<ParserNode> getSubNodes() { return next; }
+    public void addSubNode(ParserNode n) { next.add(n); }
 
     public void print() {
         printHelper(0);
