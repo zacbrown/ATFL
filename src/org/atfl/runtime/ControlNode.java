@@ -11,6 +11,7 @@ public class ControlNode {
     private Stack<SymbolTable> env = null;
     private Object value = null;
     private OpCode instr = null;
+    private String[] funcArgs = null;
     private Type type;
     private static HashMap<OpCode, Instruction> instructionTable =
             new HashMap<OpCode, Instruction>();
@@ -99,6 +100,9 @@ public class ControlNode {
                     + instr + "'");
         op.exec(runtime);
     }
+
+    public void setFuncArgs(String[] funcArgs) { this.funcArgs = funcArgs; }
+    public String[] getFuncArgs() { return funcArgs; }
     public void setEnv(Stack<SymbolTable> env) { this.env = env; }
     public Stack<SymbolTable> getEnv() { return env; }
     public Vector<ControlNode> getSubNodes() { return next; }
