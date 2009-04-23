@@ -300,12 +300,8 @@ public class ControlNode {
                 n = env.get((String)n.getValue());
             }
             Stack<SymbolTable> oldEnv = runtime.cloneEnv();
-            Vector<ControlNode> nodes = n.getSubNodes();
-            ControlNode funDef = nodes.get(0);
-            ControlNode funParams = nodes.get(1);
-            funDef.setEnv(oldEnv);
-            runtime.pushStack(funParams);
-            runtime.pushStack(funDef);
+            n.setEnv(oldEnv);
+            runtime.pushStack(n);
         }
     }
     
