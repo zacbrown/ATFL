@@ -31,6 +31,7 @@ public class ParserNode {
         REM,   // remainder
         POW,   // power (raise number to)
         LEQ,   // less than
+        IF,    // if/else statement
         PRINT, // print
         STOP   // stop
     }
@@ -86,4 +87,5 @@ public class ParserNode {
         }
         System.out.print("]");
     }
+
 }

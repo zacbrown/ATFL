@@ -9,7 +9,7 @@ import java.util.Stack;
 import org.atfl.exception.ATFLRuntimeException;
 import org.atfl.runtime.ControlNode.Type;
 import org.atfl.runtime.parser.ATFLParser;
-import org.atfl.runtime.parser.Node;
+import org.atfl.runtime.parser.ParserNode;
 import org.atfl.util.SymbolTable;
 import org.atfl.util.TokenReader;
 
@@ -35,7 +35,7 @@ public class ATFLRuntime {
             ATFLParser parser = new ATFLParser(tok);
             try { parser.parse(); }
             catch (Exception ex) { ex.printStackTrace(); }
-            Node my_node = parser.getAST();
+            ParserNode my_node = parser.getAST();
             //my_node.print();
         }
         catch (FileNotFoundException e) { e.printStackTrace(); }
