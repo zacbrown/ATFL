@@ -3,7 +3,7 @@ package org.atfl.runtime.parser;
 import java.util.Vector;
 import org.atfl.util.Node;
 
-public class ParserNode extends Node {
+public class ParserNode implements Node {
     private Vector<ParserNode> next;
     private Object value = null;
     private ParserNodeTag tag;

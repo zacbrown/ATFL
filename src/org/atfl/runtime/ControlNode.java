@@ -7,7 +7,7 @@ import org.atfl.exception.ATFLRuntimeException;
 import org.atfl.util.Node;
 import org.atfl.util.SymbolTable;
 
-public class ControlNode extends Node {
+public class ControlNode implements Node {
     private Vector<ControlNode> next;
     private Stack<SymbolTable> env = null;
     private Object value = null;
