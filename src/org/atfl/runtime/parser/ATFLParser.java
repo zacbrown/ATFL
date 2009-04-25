@@ -3,7 +3,7 @@ package org.atfl.runtime.parser;
 import org.atfl.exception.TokenException;
 import org.atfl.util.TokenReader;
 import org.atfl.exception.ParserException;
-import org.atfl.runtime.parser.ParserNode.NodeTag;
+import org.atfl.runtime.parser.ParserNode.ParserNodeTag;
 
 public class ATFLParser {
     private TokenReader tok_reader;
@@ -11,7 +11,7 @@ public class ATFLParser {
 
     public ATFLParser(TokenReader tok_reader) {
         this.tok_reader = tok_reader;
-        AST = new ParserNode(NodeTag.LIST);
+        AST = new ParserNode(ParserNodeTag.LIST);
     }
 
     public ParserNode getAST() {
@@ -42,11 +42,11 @@ public class ATFLParser {
                     ":" + tok_reader.getTokenNumber());
         }
         s += t;
-        n.addSubNode(new ParserNode(NodeTag.ATOM, s));
+        n.addSubNode(new ParserNode(ParserNodeTag.ATOM, s));
     }
 
     private ParserNode parseTop() throws ParserException, TokenException {
-        ParserNode n = new ParserNode(NodeTag.LIST);
+        ParserNode n = new ParserNode(ParserNodeTag.LIST);
         int open_brackets = 0;
 
         String s = tok_reader.getNextToken();
@@ -67,7 +67,7 @@ public class ATFLParser {
 
                 if (s.equals("(")) {
                     tok_reader.putBackToken();
-                    n.addSubNode(new ParserNode(NodeTag.LIST, parseTop()));
+                    n.addSubNode(new ParserNode(ParserNodeTag.LIST, parseTop()));
                 }
                 else if (s.equals(")")) {
                     open_brackets--;
@@ -77,7 +77,7 @@ public class ATFLParser {
                     parseQuotes(n);
                 }
                 else {
-                    n.addSubNode(new ParserNode(NodeTag.ATOM, s));
+                    n.addSubNode(new ParserNode(ParserNodeTag.ATOM, s));
                 }
             }
         }

@@ -6,31 +6,36 @@ import org.atfl.util.Node;
 public class ParserNode extends Node {
     private Vector<ParserNode> next;
     private Object value = null;
-    private NodeTag tag;
+    private ParserNodeTag tag;
 
-    public enum NodeTag {
+    public enum ParserNodeTag {
         ATOM,
         LIST,
     }
 
-    public ParserNode(NodeTag tag) {
+    public ParserNode(ParserNodeTag tag) {
         next = new Vector<ParserNode>();
         this.tag = tag;
     }
 
-    public ParserNode(NodeTag tag, Object value) {
+    public ParserNode(ParserNodeTag tag, Vector<ParserNode> next) {
+        this.next = next;
+        this.tag = tag;
+    }
+
+    public ParserNode(ParserNodeTag tag, Object value) {
         next = new Vector<ParserNode>();
         this.tag = tag;
         this.value = value;
     }
 
-    public ParserNode(NodeTag tag, ParserNode subNode) {
+    public ParserNode(ParserNodeTag tag, ParserNode subNode) {
         next = new Vector<ParserNode>();
         addSubNode(subNode);
         this.tag = tag;
     }
 
-    public NodeTag getTag() { return tag; }
+    public ParserNodeTag getTag() { return tag; }
     public Object getValue() { return value; }
     public Vector<ParserNode> getSubNodes() { return next; }
     public void addSubNode(ParserNode n) { next.add(n); }
