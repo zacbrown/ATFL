@@ -13,7 +13,7 @@ public class ControlNode extends Node {
     private Object value = null;
     private OpCode instr = null;
     private String[] funcArgs = null;
-    private Type type;
+    private ControlNodeTag type;
     private static HashMap<OpCode, Instruction> instructionTable =
             new HashMap<OpCode, Instruction>();
 
@@ -41,7 +41,7 @@ public class ControlNode extends Node {
         instructionTable.put(OpCode.STOP, new STOP());
     }
 
-    public enum Type {
+    public enum ControlNodeTag {
         INSTR,
         NUM,
         STR,
@@ -77,19 +77,24 @@ public class ControlNode extends Node {
         STOP  // stop
     }
 
-    public ControlNode(Type tag, OpCode builtInFunc) {
+    public ControlNode(ControlNodeTag tag) {
+        next = new Vector<ControlNode>();
+        this.type = tag;
+    }
+
+    public ControlNode(ControlNodeTag tag, OpCode builtInFunc) {
         next = new Vector<ControlNode>();
         this.type = tag;
         this.instr = builtInFunc;
     }
 
-    public ControlNode(Type tag, Object value) {
+    public ControlNode(ControlNodeTag tag, Object value) {
         next = new Vector<ControlNode>();
         this.type = tag;
         this.value = value;
     }
 
-    public ControlNode(Type tag, Vector<ControlNode> next) {
+    public ControlNode(ControlNodeTag tag, Vector<ControlNode> next) {
         this.next = next;
         this.type = tag;
     }
@@ -107,7 +112,7 @@ public class ControlNode extends Node {
     public void setEnv(Stack<SymbolTable> env) { this.env = env; }
     public Stack<SymbolTable> getEnv() { return env; }
     public Vector<ControlNode> getSubNodes() { return next; }
-    public Type getType() { return type; }
+    public ControlNodeTag getType() { return type; }
     public OpCode getInstruction() { return instr; }
     public Object getValue() { return value; }
     public void addSubNode(ControlNode n) { next.add(n); }
@@ -116,8 +121,8 @@ public class ControlNode extends Node {
     public String toString() {
         String ret = "";
         ret += type.toString() + ":";
-        if (type.equals(Type.INSTR)) ret += instr.toString();
-        else if (type.equals(Type.LIST)) {
+        if (type.equals(ControlNodeTag.INSTR)) ret += instr.toString();
+        else if (type.equals(ControlNodeTag.LIST)) {
             if (next.size() != 0) {
                 ret += "(";
                 for (int i = 0; i < next.size()-1; i++) {
@@ -166,9 +171,9 @@ public class ControlNode extends Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
-            Type t_1 = op_1.getType();
-            Type t_2 = op_2.getType();
-            if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
+            ControlNodeTag t_1 = op_1.getType();
+            ControlNodeTag t_2 = op_2.getType();
+            if (!t_1.equals(ControlNodeTag.NUM) || !t_2.equals(ControlNodeTag.NUM)) {
                 throw new ArithmeticException("Addition must be performed on type NUM: " +
                         op_2 + " + " + op_1);
             }
@@ -176,7 +181,7 @@ public class ControlNode extends Node {
             double val_1 = ((Double)op_1.getValue()).doubleValue();
             double val_2 = ((Double)op_2.getValue()).doubleValue();
 
-            runtime.pushStack(new ControlNode(Type.NUM, new Double(val_2 + val_1)));
+            runtime.pushStack(new ControlNode(ControlNodeTag.NUM, new Double(val_2 + val_1)));
         }
     }
 
@@ -184,9 +189,9 @@ public class ControlNode extends Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
-            Type t_1 = op_1.getType();
-            Type t_2 = op_2.getType();
-            if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
+            ControlNodeTag t_1 = op_1.getType();
+            ControlNodeTag t_2 = op_2.getType();
+            if (!t_1.equals(ControlNodeTag.NUM) || !t_2.equals(ControlNodeTag.NUM)) {
                 throw new ArithmeticException("Subtraction must be performed on type NUM: " +
                         op_2 + " - " + op_1);
             }
@@ -194,7 +199,7 @@ public class ControlNode extends Node {
             double val_1 = ((Double) op_1.getValue()).doubleValue();
             double val_2 = ((Double) op_2.getValue()).doubleValue();
 
-            runtime.pushStack(new ControlNode(Type.NUM, new Double(val_2 - val_1)));
+            runtime.pushStack(new ControlNode(ControlNodeTag.NUM, new Double(val_2 - val_1)));
         }
     }
 
@@ -202,9 +207,9 @@ public class ControlNode extends Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
-            Type t_1 = op_1.getType();
-            Type t_2 = op_2.getType();
-            if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
+            ControlNodeTag t_1 = op_1.getType();
+            ControlNodeTag t_2 = op_2.getType();
+            if (!t_1.equals(ControlNodeTag.NUM) || !t_2.equals(ControlNodeTag.NUM)) {
                 throw new ArithmeticException("Addition must be performed on type NUM: " +
                         op_2 + " + " + op_1);
             }
@@ -212,7 +217,7 @@ public class ControlNode extends Node {
             double val_1 = ((Double) op_1.getValue()).doubleValue();
             double val_2 = ((Double) op_2.getValue()).doubleValue();
 
-            runtime.pushStack(new ControlNode(Type.NUM, new Double(val_2 * val_1)));
+            runtime.pushStack(new ControlNode(ControlNodeTag.NUM, new Double(val_2 * val_1)));
         }
     }
 
@@ -220,9 +225,9 @@ public class ControlNode extends Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
-            Type t_1 = op_1.getType();
-            Type t_2 = op_2.getType();
-            if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
+            ControlNodeTag t_1 = op_1.getType();
+            ControlNodeTag t_2 = op_2.getType();
+            if (!t_1.equals(ControlNodeTag.NUM) || !t_2.equals(ControlNodeTag.NUM)) {
                 throw new ArithmeticException("Addition must be performed on type NUM: " +
                         op_2 + " + " + op_1);
             }
@@ -230,7 +235,7 @@ public class ControlNode extends Node {
             double val_1 = ((Double) op_1.getValue()).doubleValue();
             double val_2 = ((Double) op_2.getValue()).doubleValue();
 
-            runtime.pushStack(new ControlNode(Type.NUM, new Double(val_2 / val_1)));
+            runtime.pushStack(new ControlNode(ControlNodeTag.NUM, new Double(val_2 / val_1)));
         }
     }
 
@@ -238,9 +243,9 @@ public class ControlNode extends Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
-            Type t_1 = op_1.getType();
-            Type t_2 = op_2.getType();
-            if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
+            ControlNodeTag t_1 = op_1.getType();
+            ControlNodeTag t_2 = op_2.getType();
+            if (!t_1.equals(ControlNodeTag.NUM) || !t_2.equals(ControlNodeTag.NUM)) {
                 throw new ArithmeticException("Exponentiation must be performed on type NUM: " +
                         op_2 + " ** " + op_1);
             }
@@ -248,7 +253,7 @@ public class ControlNode extends Node {
             double val_1 = ((Double) op_1.getValue()).doubleValue();
             double val_2 = ((Double) op_2.getValue()).doubleValue();
 
-            runtime.pushStack(new ControlNode(Type.NUM, new Double(Math.pow(val_2, val_1))));
+            runtime.pushStack(new ControlNode(ControlNodeTag.NUM, new Double(Math.pow(val_2, val_1))));
         }
     }
 
@@ -256,9 +261,9 @@ public class ControlNode extends Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode op_1 = runtime.popStack();
             ControlNode op_2 = runtime.popStack();
-            Type t_1 = op_1.getType();
-            Type t_2 = op_2.getType();
-            if (!t_1.equals(Type.NUM) || !t_2.equals(Type.NUM)) {
+            ControlNodeTag t_1 = op_1.getType();
+            ControlNodeTag t_2 = op_2.getType();
+            if (!t_1.equals(ControlNodeTag.NUM) || !t_2.equals(ControlNodeTag.NUM)) {
                 throw new ArithmeticException("Modulo must be performed on type NUM: " +
                         op_2 + " % " + op_1);
             }
@@ -266,7 +271,7 @@ public class ControlNode extends Node {
             double val_1 = ((Double) op_1.getValue()).doubleValue();
             double val_2 = ((Double) op_2.getValue()).doubleValue();
 
-            runtime.pushStack(new ControlNode(Type.NUM, new Double(val_2 % val_1)));
+            runtime.pushStack(new ControlNode(ControlNodeTag.NUM, new Double(val_2 % val_1)));
         }
     }
 
@@ -275,7 +280,7 @@ public class ControlNode extends Node {
             ControlNode n = runtime.popStack();
             SymbolTable env = (SymbolTable)runtime.peekEnv();
 
-            if (n.getType().equals(Type.SYMBOL)) {
+            if (n.getType().equals(ControlNodeTag.SYMBOL)) {
                 n = (ControlNode)env.get((String)n.getValue());
             }
 
@@ -299,8 +304,8 @@ public class ControlNode extends Node {
     private static class LDF implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popControl();
-            Type nType = n.getType();
-            if (nType.equals(Type.SYMBOL)) {
+            ControlNodeTag nType = n.getType();
+            if (nType.equals(ControlNodeTag.SYMBOL)) {
                 SymbolTable env = (SymbolTable)runtime.peekEnv();
                 n = env.get((String)n.getValue());
             }
@@ -353,8 +358,8 @@ public class ControlNode extends Node {
     private static class CAR implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popStack();
-            Type nType = n.getType();
-            if (nType.equals(Type.SYMBOL)) {
+            ControlNodeTag nType = n.getType();
+            if (nType.equals(ControlNodeTag.SYMBOL)) {
                 SymbolTable env = (SymbolTable)runtime.peekEnv();
                 n = env.get((String)n.getValue());
             }
@@ -366,13 +371,13 @@ public class ControlNode extends Node {
     private static class CDR implements Instruction {
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popStack();
-            Type nType = n.getType();
-            if (nType.equals(Type.SYMBOL)) {
+            ControlNodeTag nType = n.getType();
+            if (nType.equals(ControlNodeTag.SYMBOL)) {
                 SymbolTable env = (SymbolTable)runtime.peekEnv();
                 n = env.get((String)n.getValue());
             }
             Vector<ControlNode> nodes = n.getSubNodes();
-            runtime.pushStack(new ControlNode(Type.LIST,
+            runtime.pushStack(new ControlNode(ControlNodeTag.LIST,
                     new Vector<ControlNode>(nodes.subList(1, nodes.size()))));
         }
     }
@@ -383,11 +388,11 @@ public class ControlNode extends Node {
             ControlNode list = runtime.popStack();
             SymbolTable env = (SymbolTable)runtime.peekEnv();
 
-            if (elem.getType().equals(Type.SYMBOL)) {
+            if (elem.getType().equals(ControlNodeTag.SYMBOL)) {
                 elem = env.get((String)elem.getValue());
             }
 
-            if (elem.getType().equals(Type.SYMBOL)) {
+            if (elem.getType().equals(ControlNodeTag.SYMBOL)) {
                 list = env.get((String)list.getValue());
             }
 
@@ -397,26 +402,26 @@ public class ControlNode extends Node {
     }
 
     private static class ATOM implements Instruction {
-        private static HashMap<Type, Boolean> validAtoms =
-                new HashMap<Type, Boolean>();
+        private static HashMap<ControlNodeTag, Boolean> validAtoms =
+                new HashMap<ControlNodeTag, Boolean>();
         static {
-            validAtoms.put(Type.NUM, Boolean.TRUE);
-            validAtoms.put(Type.STR, Boolean.TRUE);
-            validAtoms.put(Type.LIST, Boolean.FALSE);
-            validAtoms.put(Type.BOOL, Boolean.TRUE);
-            validAtoms.put(Type.NIL, Boolean.TRUE);
+            validAtoms.put(ControlNodeTag.NUM, Boolean.TRUE);
+            validAtoms.put(ControlNodeTag.STR, Boolean.TRUE);
+            validAtoms.put(ControlNodeTag.LIST, Boolean.FALSE);
+            validAtoms.put(ControlNodeTag.BOOL, Boolean.TRUE);
+            validAtoms.put(ControlNodeTag.NIL, Boolean.TRUE);
         }
 
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popStack();
-            Type nType = n.getType();
-            if (nType.equals(Type.SYMBOL)) {
+            ControlNodeTag nType = n.getType();
+            if (nType.equals(ControlNodeTag.SYMBOL)) {
                 SymbolTable env = (SymbolTable)runtime.peekEnv();
                 n = env.get((String)n.getValue());
                 nType = n.getType();
             }
             Boolean isAtom = validAtoms.get(nType);
-            runtime.pushStack(new ControlNode(Type.BOOL, isAtom));
+            runtime.pushStack(new ControlNode(ControlNodeTag.BOOL, isAtom));
         }
     }
 
@@ -424,30 +429,30 @@ public class ControlNode extends Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode val_1 = runtime.popStack();
             ControlNode val_2 = runtime.popStack();
-            Type val_1_type = val_1.getType();
-            Type val_2_type = val_2.getType();
+            ControlNodeTag val_1_type = val_1.getType();
+            ControlNodeTag val_2_type = val_2.getType();
             SymbolTable env = (SymbolTable)runtime.peekEnv();
 
 
-            if (val_1_type.equals(Type.SYMBOL)) {
+            if (val_1_type.equals(ControlNodeTag.SYMBOL)) {
                 val_1 = env.get((String)val_1.getValue());
                 val_1_type = val_1.getType();
             }
 
-            if (val_2_type.equals(Type.SYMBOL)) {
+            if (val_2_type.equals(ControlNodeTag.SYMBOL)) {
                 val_2 = env.get((String)val_1.getValue());
                 val_2_type = val_2.getType();
             }
 
-            if (val_1_type.equals(Type.LIST)) {
-                runtime.pushStack(new ControlNode(Type.BOOL, equalsList(val_1, val_2)));
+            if (val_1_type.equals(ControlNodeTag.LIST)) {
+                runtime.pushStack(new ControlNode(ControlNodeTag.BOOL, equalsList(val_1, val_2)));
             }
             else {
                 if (val_1.getValue().equals(val_2.getValue())) {
-                    runtime.pushStack(new ControlNode(Type.BOOL, Boolean.TRUE));
+                    runtime.pushStack(new ControlNode(ControlNodeTag.BOOL, Boolean.TRUE));
                 }
                 else {
-                    runtime.pushStack(new ControlNode(Type.BOOL, Boolean.FALSE));
+                    runtime.pushStack(new ControlNode(ControlNodeTag.BOOL, Boolean.FALSE));
                 }
             }
         }
@@ -476,21 +481,21 @@ public class ControlNode extends Node {
             Object v_2 = n_2.getValue();
             SymbolTable env = (SymbolTable)runtime.peekEnv();
 
-            if (n_1.getType().equals(Type.SYMBOL)) {
+            if (n_1.getType().equals(ControlNodeTag.SYMBOL)) {
                 n_1 = env.get((String)v_1);
                 v_1 = n_1.getValue();
             }
 
-            if (n_2.getType().equals(Type.SYMBOL)) {
+            if (n_2.getType().equals(ControlNodeTag.SYMBOL)) {
                 n_2 = env.get((String)v_1);
                 v_2 = n_2.getValue();
             }
 
             if (((Comparable)v_2).compareTo((Comparable)v_1) == 1) {
-                runtime.pushStack(new ControlNode(Type.BOOL, Boolean.FALSE));
+                runtime.pushStack(new ControlNode(ControlNodeTag.BOOL, Boolean.FALSE));
             }
             else {
-                runtime.pushStack(new ControlNode(Type.BOOL, Boolean.TRUE));
+                runtime.pushStack(new ControlNode(ControlNodeTag.BOOL, Boolean.TRUE));
             }
         }
     }

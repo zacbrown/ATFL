@@ -7,7 +7,7 @@ package org.atfl.runtime;
 import java.io.FileNotFoundException;
 import java.util.Stack;
 import org.atfl.exception.ATFLRuntimeException;
-import org.atfl.runtime.ControlNode.Type;
+import org.atfl.runtime.ControlNode.ControlNodeTag;
 import org.atfl.runtime.parser.ATFLParser;
 import org.atfl.runtime.parser.ParserNode;
 import org.atfl.util.SymbolTable;
@@ -65,9 +65,9 @@ public class ATFLRuntime {
     private void execute() {
         while(reg_c.isEmpty() == false) {
             ControlNode n = reg_c.pop();
-            Type n_type = n.getType();
+            ControlNodeTag n_type = n.getType();
 
-            if (n_type == Type.INSTR) {
+            if (n_type == ControlNodeTag.INSTR) {
                 try { n.exec(this); }
                 catch (ATFLRuntimeException ex) { ex.printStackTrace(); }
             }
