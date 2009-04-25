@@ -4,9 +4,10 @@ import java.util.Vector;
 import java.util.HashMap;
 import java.util.Stack;
 import org.atfl.exception.ATFLRuntimeException;
+import org.atfl.util.Node;
 import org.atfl.util.SymbolTable;
 
-public class ControlNode {
+public class ControlNode extends Node {
     private Vector<ControlNode> next;
     private Stack<SymbolTable> env = null;
     private Object value = null;

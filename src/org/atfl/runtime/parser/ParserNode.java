@@ -1,8 +1,9 @@
 package org.atfl.runtime.parser;
 
 import java.util.Vector;
+import org.atfl.util.Node;
 
-public class ParserNode {
+public class ParserNode extends Node {
     private Vector<ParserNode> next;
     private Object value = null;
     private NodeTag tag;
