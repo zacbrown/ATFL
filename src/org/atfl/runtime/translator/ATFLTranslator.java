@@ -1,7 +1,9 @@
 package org.atfl.runtime.translator;
 
+import java.util.Collections;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.regex.Pattern;
 import org.atfl.exception.TranslatorException;
 import org.atfl.runtime.ControlNode;
 import org.atfl.runtime.ControlNode.OpCode;
@@ -15,10 +17,15 @@ public class ATFLTranslator {
     private ParserNode AST;
     private ControlNode control;
     private SymbolTable topEnv = new SymbolTable();
+    private static Pattern regexNum = Pattern.compile("[-]?[0-9]+(\\.[0-9]+)?");
+    private static Pattern regexBool = Pattern.compile("True|False");
 
     public ATFLTranslator(ParserNode AST) {
         this.AST = AST;
     }
+
+    public ControlNode getControl() { return control; }
+    public SymbolTable getEnv() { return topEnv; }
 
     public void translateTop() throws TranslatorException {
         if (AST.getTag().equals(ParserNodeTag.LIST) == false) {
@@ -27,30 +34,47 @@ public class ATFLTranslator {
         }
 
         ControlNode code = new ControlNode(ControlNodeTag.LIST, new Vector<ControlNode>());
-        code.addSubNode(new ControlNode(ControlNodeTag.INSTR, OpCode.AP));
+        //code.addSubNode(new ControlNode(ControlNodeTag.INSTR, OpCode.AP));
         code.addSubNode(new ControlNode(ControlNodeTag.INSTR, OpCode.STOP));
-        control = translate((ParserNode)ListUtils.car(AST), new Stack(),
-                new ControlNode(ControlNodeTag.LIST, code));
+        Vector<ParserNode> nodes = AST.getSubNodes();
+        int size = nodes.size();
+        for (int i = size - 1; i >= 0; i--) {
+            control = translate((ParserNode)nodes.get(i), new Stack(), code);
+        }
+        Collections.reverse(control.getSubNodes());
     }
 
-    private ControlNode translateList(ParserNode expr, Stack env, ControlNode code) {
-        if (expr.equals(null)) {
-            ListUtils.cons(code, new ControlNode(ControlNodeTag.NIL));
-            ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.LDC));
-            return code;
-        }
-        else {
-            ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.CONS));
-            return translateList(new ParserNode(ParserNodeTag.LIST, ListUtils.cdr(expr)), env,
-                    translate((ParserNode)ListUtils.car(expr), env, code));
-        }
-
-    }
-
-    public ControlNode translate(ParserNode expr, Stack env, ControlNode code) {
+    public ControlNode translate(ParserNode expr, Stack env, ControlNode code) throws TranslatorException {
         if (expr.getTag().equals(ParserNodeTag.ATOM)) {
             ListUtils.cons(code, new ControlNode(ControlNodeTag.SYMBOL, expr.getValue()));
             return code;
+        }
+        else if (((ParserNode)ListUtils.car(expr)).getValue().equals("quote")) {
+            ParserNode node = (ParserNode)ListUtils.cadr(expr);
+            String val = (String)node.getValue();
+            if (regexNum.matcher(val).matches()) {
+                ListUtils.cons(code, new ControlNode(ControlNodeTag.NUM, new Double(val)));
+            } else if (val.equals("True")) {
+                ListUtils.cons(code, new ControlNode(ControlNodeTag.BOOL, Boolean.TRUE));
+            } else if (val.equals("False")) {
+                ListUtils.cons(code, new ControlNode(ControlNodeTag.BOOL, Boolean.FALSE));
+            } else if (val.charAt(0) == '\"' && val.charAt(val.length()-1) == '\"') {
+                ListUtils.cons(code, new ControlNode(ControlNodeTag.STR,
+                        val.substring(1, val.length()-1)));
+            } else {
+                throw new TranslatorException("Invalid atom given: '" + val + "'");
+            }
+
+            ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.LDC));
+            return code;
+        }
+        else if (((ParserNode)ListUtils.car(expr)).getValue().equals("print")) {
+            ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.PRINT));
+            return translate((ParserNode)ListUtils.cadr(expr), env, code);
+        }
+        else if (((ParserNode)ListUtils.car(expr)).getValue().equals("println")) {
+            ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.PRINTLN));
+            return translate((ParserNode)ListUtils.cadr(expr), env, code);
         }
         else if (((ParserNode)ListUtils.car(expr)).getValue().equals("add")) {
             ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.ADD));
@@ -82,6 +106,16 @@ public class ATFLTranslator {
             return translate((ParserNode)ListUtils.cadr(expr), env,
                     translate((ParserNode)ListUtils.caddr(expr), env, code));
         }
+        else if (((ParserNode)ListUtils.car(expr)).getValue().equals("eq")) {
+            ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.EQ));
+            return translate((ParserNode)ListUtils.cadr(expr), env,
+                    translate((ParserNode)ListUtils.caddr(expr), env, code));
+        }
+        else if (((ParserNode)ListUtils.car(expr)).getValue().equals("leq")) {
+            ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.LEQ));
+            return translate((ParserNode)ListUtils.cadr(expr), env,
+                    translate((ParserNode)ListUtils.caddr(expr), env, code));
+        }
         else if (((ParserNode)ListUtils.car(expr)).getValue().equals("car")) {
             ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.CAR));
             return translate((ParserNode)ListUtils.caar(expr), env, code);
@@ -100,12 +134,16 @@ public class ATFLTranslator {
                     translate((ParserNode)ListUtils.cadr(expr), env, code));
         }
         else if (((ParserNode)ListUtils.car(expr)).getValue().equals("if")) {
-            ControlNode thenpt = translate((ParserNode)ListUtils.caddr(expr), env,
-                    new ControlNode(ControlNodeTag.LIST,
-                    new Vector<ControlNode>().add(new ControlNode(ControlNodeTag.INSTR, OpCode.JOIN))));
-            ControlNode elsept = translate((ParserNode)ListUtils.cadddr(expr), env,
-                    new ControlNode(ControlNodeTag.LIST,
-                    new Vector<ControlNode>().add(new ControlNode(ControlNodeTag.INSTR, OpCode.JOIN))));
+            ControlNode thenptCode = new ControlNode(ControlNodeTag.LIST, new Vector<ControlNode>());
+            thenptCode.addSubNode(new ControlNode(ControlNodeTag.INSTR, OpCode.JOIN));
+            ControlNode thenpt = translate((ParserNode)ListUtils.caddr(expr), env, thenptCode);
+
+            ControlNode elseptCode = new ControlNode(ControlNodeTag.LIST, new Vector<ControlNode>());
+            elseptCode.addSubNode(new ControlNode(ControlNodeTag.INSTR, OpCode.JOIN));
+            ControlNode elsept = translate((ParserNode)ListUtils.cadddr(expr), env, elseptCode);
+
+            Collections.reverse(thenptCode.getSubNodes());
+            Collections.reverse(elseptCode.getSubNodes());
             ListUtils.cons(code, elsept);
             ListUtils.cons(code, thenpt);
             ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.SEL));
@@ -121,8 +159,6 @@ public class ATFLTranslator {
             ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.LDF));
             return code;
         }
-        ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.AP));
-        return translateList(new ParserNode(ParserNodeTag.LIST, ListUtils.cdr(expr)),
-                env, translate((ParserNode)ListUtils.car(expr), env, code));
+        return code;
     }
 }
