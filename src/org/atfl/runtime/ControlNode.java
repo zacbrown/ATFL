@@ -25,6 +25,7 @@ public class ControlNode implements Node {
         instructionTable.put(OpCode.POW, new POW());
         instructionTable.put(OpCode.REM, new REM());
         instructionTable.put(OpCode.PRINT, new PRINT());
+        instructionTable.put(OpCode.PRINTLN, new PRINTLN());
         instructionTable.put(OpCode.LDC, new LDC());
         instructionTable.put(OpCode.LD, new LD());
         instructionTable.put(OpCode.LDF, new LDF());
@@ -74,6 +75,7 @@ public class ControlNode implements Node {
         POW,  // power (raise number to)
         LEQ,  // less than
         PRINT,// print top item on stack
+        PRINTLN, // print with newline
         STOP  // stop
     }
 
@@ -277,6 +279,19 @@ public class ControlNode implements Node {
 
     private static class PRINT implements Instruction {
         public void exec(ATFLRuntime runtime) {
+            ControlNode n = runtime.popStack();
+            SymbolTable env = (SymbolTable)runtime.peekEnv();
+
+            if (n.getType().equals(ControlNodeTag.SYMBOL)) {
+                n = (ControlNode)env.get((String)n.getValue());
+            }
+
+            System.out.print(n.getValue());
+        }
+    }
+
+    private static class PRINTLN implements Instruction {
+                public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popStack();
             SymbolTable env = (SymbolTable)runtime.peekEnv();
 
