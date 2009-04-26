@@ -26,23 +26,20 @@ public class ATFLParser {
 
     private void parseQuotes(ParserNode n) throws ParserException, TokenException {
         String s = "";
-
+        StringBuilder sb = new StringBuilder();
         s = tok_reader.getNextToken();
         if (!s.equals("\"")) {
             throw new ParserException("Expected \" but found '" + s +
                     "' at line:token " + tok_reader.getLineNumber() +
                     ":" + tok_reader.getTokenNumber());
         }
-        s += tok_reader.getNextToken();
-        String t = tok_reader.getNextToken();
-
-        if (!t.equals("\"")) {
-            throw new ParserException("Expected \" but found '" + s +
-                    "' at line:token " + tok_reader.getLineNumber() +
-                    ":" + tok_reader.getTokenNumber());
+        sb.append(s);
+        while ((s = tok_reader.getNextToken()).equals("\"") == false) {
+            sb.append(s);
         }
-        s += t;
-        n.addSubNode(new ParserNode(ParserNodeTag.ATOM, s));
+        sb.append(s);
+
+        n.addSubNode(new ParserNode(ParserNodeTag.ATOM, sb.toString()));
     }
 
     private ParserNode parseTop() throws ParserException, TokenException {
@@ -67,7 +64,7 @@ public class ATFLParser {
 
                 if (s.equals("(")) {
                     tok_reader.putBackToken();
-                    n.addSubNode(new ParserNode(ParserNodeTag.LIST, parseTop()));
+                    n.addSubNode(parseTop());
                 }
                 else if (s.equals(")")) {
                     open_brackets--;
