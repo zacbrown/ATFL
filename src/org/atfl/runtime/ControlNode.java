@@ -336,13 +336,13 @@ public class ControlNode implements Node {
             ControlNode val = runtime.popStack();
             ControlNode controlTrue = runtime.popControl();
             ControlNode controlFalse = runtime.popControl();
-            Stack<ControlNode> newControl = null;
+            Stack<ControlNode> newControl = new Stack<ControlNode>();
 
             if (val.getValue().equals(Boolean.TRUE)) {
-                newControl = (Stack<ControlNode>) new Vector(controlTrue.getSubNodes());
+                newControl.addAll(controlTrue.getSubNodes());
             }
             else {
-                newControl = (Stack<ControlNode>) new Vector(controlFalse.getSubNodes());
+                newControl.addAll(controlFalse.getSubNodes());
             }
 
             runtime.pushDump(runtime.swapControl(newControl));
