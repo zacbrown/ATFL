@@ -44,6 +44,21 @@ public class ATFLTranslator {
         Collections.reverse(control.getSubNodes());
     }
 
+    private ControlNode translateAtom(ParserNode n) throws TranslatorException {
+        String val = (String) n.getValue();
+        if (regexNum.matcher(val).matches()) {
+            return new ControlNode(ControlNodeTag.NUM, new Double(val));
+        } else if (val.equals("True")) {
+            return new ControlNode(ControlNodeTag.BOOL, Boolean.TRUE);
+        } else if (val.equals("False")) {
+            return new ControlNode(ControlNodeTag.BOOL, Boolean.FALSE);
+        } else if (val.charAt(0) == '\"' && val.charAt(val.length() - 1) == '\"') {
+            return new ControlNode(ControlNodeTag.STR, val.substring(1, val.length() - 1));
+        } else {
+            throw new TranslatorException("Invalid atom given: '" + val + "'");
+        }
+    }
+
     public ControlNode translate(ParserNode expr, Stack env, ControlNode code) throws TranslatorException {
         if (expr.getTag().equals(ParserNodeTag.ATOM)) {
             ListUtils.cons(code, new ControlNode(ControlNodeTag.SYMBOL, expr.getValue()));
@@ -51,20 +66,18 @@ public class ATFLTranslator {
         }
         else if (((ParserNode)ListUtils.car(expr)).getValue().equals("quote")) {
             ParserNode node = (ParserNode)ListUtils.cadr(expr);
-            String val = (String)node.getValue();
-            if (regexNum.matcher(val).matches()) {
-                ListUtils.cons(code, new ControlNode(ControlNodeTag.NUM, new Double(val)));
-            } else if (val.equals("True")) {
-                ListUtils.cons(code, new ControlNode(ControlNodeTag.BOOL, Boolean.TRUE));
-            } else if (val.equals("False")) {
-                ListUtils.cons(code, new ControlNode(ControlNodeTag.BOOL, Boolean.FALSE));
-            } else if (val.charAt(0) == '\"' && val.charAt(val.length()-1) == '\"') {
-                ListUtils.cons(code, new ControlNode(ControlNodeTag.STR,
-                        val.substring(1, val.length()-1)));
-            } else {
-                throw new TranslatorException("Invalid atom given: '" + val + "'");
+            ControlNode atomCode = null;
+            if (node.getTag().equals(ParserNodeTag.ATOM)) {
+                atomCode = translateAtom(node);
             }
-
+            else {
+                atomCode = new ControlNode(ControlNodeTag.LIST, new Vector<ControlNode>());
+                Vector<ParserNode> nodes = node.getSubNodes();
+                for (ParserNode n : nodes) {
+                    atomCode.addSubNode(translateAtom(n));
+                }
+            }
+            ListUtils.cons(code, atomCode);
             ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.LDC));
             return code;
         }
