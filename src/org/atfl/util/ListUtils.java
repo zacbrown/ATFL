@@ -40,7 +40,6 @@ public class ListUtils {
     }
 
     public static Node cadddr(Node n) {
-        int size = n.getSubNodes().size();
-        return cddr(n).subList(1, size).get(0);
+        return cddr(n).get(1);
     }
 }
