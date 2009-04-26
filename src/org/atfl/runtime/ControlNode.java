@@ -286,12 +286,25 @@ public class ControlNode implements Node {
                 n = (ControlNode)env.get((String)n.getValue());
             }
 
-            System.out.print(n.getValue());
+            if (n.getType().equals(ControlNodeTag.LIST)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("[");
+                Vector<ControlNode> nodes = n.getSubNodes();
+                for (ControlNode node : nodes) {
+                    sb.append(node.getValue() + ", ");
+                }
+                sb.delete(sb.length()-2, sb.length());
+                sb.append("]");
+                System.out.println(sb.toString());
+            }
+            else {
+                System.out.println(n.getValue());
+            }
         }
     }
 
     private static class PRINTLN implements Instruction {
-                public void exec(ATFLRuntime runtime) {
+        public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popStack();
             SymbolTable env = (SymbolTable)runtime.peekEnv();
 
@@ -299,7 +312,20 @@ public class ControlNode implements Node {
                 n = (ControlNode)env.get((String)n.getValue());
             }
 
-            System.out.println(n.getValue());
+            if (n.getType().equals(ControlNodeTag.LIST)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("[");
+                Vector<ControlNode> nodes = n.getSubNodes();
+                for (ControlNode node : nodes) {
+                    sb.append(node.getValue() + ", ");
+                }
+                sb.delete(sb.length()-2, sb.length());
+                sb.append("]");
+                System.out.println(sb.toString());
+            }
+            else {
+                System.out.println(n.getValue());
+            }
         }
     }
 
@@ -528,7 +554,6 @@ public class ControlNode implements Node {
 
     private static class STOP implements Instruction {
         public void exec(ATFLRuntime runtime) {
-            runtime.dumpRegisters();
             System.exit(0);
         }
     }
