@@ -37,16 +37,21 @@ public class ATFLTranslator {
         //code.addSubNode(new ControlNode(ControlNodeTag.INSTR, OpCode.AP));
         code.addSubNode(new ControlNode(ControlNodeTag.INSTR, OpCode.STOP));
         Vector<ParserNode> nodes = AST.getSubNodes();
+        Stack env = new Stack();
+        env.push(topEnv);
         int size = nodes.size();
         for (int i = size - 1; i >= 0; i--) {
-            control = translate((ParserNode)nodes.get(i), new Stack(), code);
+            control = translate((ParserNode)nodes.get(i), env, code);
         }
         Collections.reverse(control.getSubNodes());
     }
 
-    private ControlNode translateAtom(ParserNode n) throws TranslatorException {
+    private ControlNode translateAtom(ParserNode n, Stack env) throws TranslatorException {
         String val = (String) n.getValue();
-        if (regexNum.matcher(val).matches()) {
+        ControlNode symbolVal = ((SymbolTable)env.peek()).get(val);
+        if (symbolVal != null) {
+            return new ControlNode(ControlNodeTag.SYMBOL, val);
+        } else if (regexNum.matcher(val).matches()) {
             return new ControlNode(ControlNodeTag.NUM, new Double(val));
         } else if (val.equals("True")) {
             return new ControlNode(ControlNodeTag.BOOL, Boolean.TRUE);
@@ -61,24 +66,14 @@ public class ATFLTranslator {
 
     public ControlNode translate(ParserNode expr, Stack env, ControlNode code) throws TranslatorException {
         if (expr.getTag().equals(ParserNodeTag.ATOM)) {
-            ListUtils.cons(code, new ControlNode(ControlNodeTag.SYMBOL, expr.getValue()));
-            return code;
-        }
-        else if (((ParserNode)ListUtils.car(expr)).getValue().equals("quote")) {
-            ParserNode node = (ParserNode)ListUtils.cadr(expr);
-            ControlNode atomCode = null;
-            if (node.getTag().equals(ParserNodeTag.ATOM)) {
-                atomCode = translateAtom(node);
+            ControlNode n = translateAtom(expr, env);
+            ListUtils.cons(code, n);
+            if (n.getType().equals(ControlNodeTag.SYMBOL)) {
+                ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.LD));
             }
             else {
-                atomCode = new ControlNode(ControlNodeTag.LIST, new Vector<ControlNode>());
-                Vector<ParserNode> nodes = node.getSubNodes();
-                for (ParserNode n : nodes) {
-                    atomCode.addSubNode(translateAtom(n));
-                }
+                ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.LDC));
             }
-            ListUtils.cons(code, atomCode);
-            ListUtils.cons(code, new ControlNode(ControlNodeTag.INSTR, OpCode.LDC));
             return code;
         }
         else if (((ParserNode)ListUtils.car(expr)).getValue().equals("print")) {
