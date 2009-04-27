@@ -6,10 +6,14 @@
 package org.atfl.runtime;
 import java.io.FileNotFoundException;
 import java.util.Stack;
+import java.util.Vector;
 import org.atfl.exception.ATFLRuntimeException;
+import org.atfl.exception.TranslatorException;
 import org.atfl.runtime.ControlNode.ControlNodeTag;
 import org.atfl.runtime.parser.ATFLParser;
 import org.atfl.runtime.parser.ParserNode;
+import org.atfl.runtime.translator.ATFLTranslator;
+import org.atfl.util.ListUtils;
 import org.atfl.util.SymbolTable;
 import org.atfl.util.TokenReader;
 
@@ -26,7 +30,6 @@ public class ATFLRuntime {
 
     public ATFLRuntime(String filename) {
         reg_s = new Stack<ControlNode>();
-        reg_e = new Stack();
         reg_c = new Stack<ControlNode>();
         reg_d = new Stack();
 
@@ -37,9 +40,13 @@ public class ATFLRuntime {
             catch (Exception ex) { ex.printStackTrace(); }
             ParserNode my_node = parser.getAST();
             //my_node.print();
+            ATFLTranslator translator = new ATFLTranslator(my_node);
+            try { translator.translateTop(); }
+            catch (Exception ex) { ex.printStackTrace(); }
+            reg_c.addAll(translator.getControl().getSubNodes());
+            reg_e = translator.getEnv();
         }
         catch (FileNotFoundException e) { e.printStackTrace(); }
-
         this.execute();
     }
 
@@ -79,6 +86,7 @@ public class ATFLRuntime {
         System.out.println("E:" + reg_e);
         System.out.println("C:" + reg_c);
         System.out.println("D:" + reg_d);
+        System.out.println();
     }
 
     public Object peekEnv() { return reg_e.peek(); }
