@@ -25,7 +25,7 @@ public class SymbolTable {
     }
 
     public void add(String n, ControlNode value) throws SymbolException {
-        if (symbols.containsKey(n)) {
+        if (symbols.containsKey(n) && symbols.get(n) != null) {
             throw new SymbolException("Cannot redefine symbol '" + n.toString() + "'");
         }
 
