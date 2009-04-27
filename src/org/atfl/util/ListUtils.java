@@ -39,7 +39,12 @@ public class ListUtils {
         return cddr(n).get(0);
     }
 
+    public static Vector<Node> cdddr(Node n) {
+        Vector m = cddr(n);
+        return new Vector(m.subList(1, m.size()));
+    }
+
     public static Node cadddr(Node n) {
-        return cddr(n).get(1);
+        return cdddr(n).get(0);
     }
 }
