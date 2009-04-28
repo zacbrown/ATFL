@@ -26,7 +26,8 @@ public class SymbolTable {
 
     public void add(String n, ControlNode value) throws SymbolException {
         if (symbols.containsKey(n) && symbols.get(n) != null) {
-            throw new SymbolException("Cannot redefine symbol '" + n.toString() + "'");
+            //throw new SymbolException("Cannot redefine symbol '" + n.toString() + "'");
+            return;
         }
 
         symbols.put(n, value);
@@ -34,7 +35,13 @@ public class SymbolTable {
 
     public ControlNode getAssociatedBlock() { return associatedBlock; }
     public SymbolTable getParent() { return parent; }
-    public ControlNode get(String n) { return symbols.get(n); }
+    public ControlNode get(String n) {
+        ControlNode node = symbols.get(n);
+        if (node == null && parent != null) {
+            return parent.get(n);
+        }
+        return node;
+    }
 
     @Override
     public String toString() { return symbols.toString(); }
