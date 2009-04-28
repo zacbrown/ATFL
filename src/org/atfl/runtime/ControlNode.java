@@ -1,5 +1,6 @@
 package org.atfl.runtime;
 
+import java.util.Collections;
 import java.util.Vector;
 import java.util.HashMap;
 import java.util.Stack;
@@ -29,6 +30,7 @@ public class ControlNode implements Node {
         instructionTable.put(OpCode.LDC, new LDC());
         instructionTable.put(OpCode.LD, new LD());
         instructionTable.put(OpCode.LDF, new LDF());
+        instructionTable.put(OpCode.LDFS, new LDFS());
         instructionTable.put(OpCode.AP, new AP());
         instructionTable.put(OpCode.SEL, new SEL());
         instructionTable.put(OpCode.JOIN, new JOIN());
@@ -56,6 +58,7 @@ public class ControlNode implements Node {
         LD,   // load
         LDC,  // load constant
         LDF,  // load function
+        LDFS, // load function from symbol table
         AP,   // apply function
         RTN,  // return
         DUM,  // create dummy environment
@@ -346,13 +349,23 @@ public class ControlNode implements Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode n = runtime.popControl();
             ControlNodeTag nType = n.getType();
-            if (nType.equals(ControlNodeTag.SYMBOL)) {
-                SymbolTable env = (SymbolTable)runtime.peekEnv();
-                n = env.get((String)n.getValue());
-            }
             Stack<SymbolTable> oldEnv = runtime.cloneEnv();
             n.setEnv(oldEnv);
             runtime.pushStack(n);
+        }
+    }
+
+    private static class LDFS implements Instruction {
+        public void exec(ATFLRuntime runtime) {
+            ControlNode n = runtime.popControl();
+            SymbolTable env = (SymbolTable)runtime.peekEnv();
+            Vector<ControlNode> nodes = env.get((String)n.getValue()).getSubNodes();
+            ControlNode funcBody = nodes.get(0);
+            ControlNode context = nodes.get(1);
+            funcBody.setFuncArgs(context.getFuncArgs());
+            Stack<SymbolTable> oldEnv = runtime.cloneEnv();
+            funcBody.setEnv(oldEnv);
+            runtime.pushStack(funcBody);
         }
     }
     
@@ -360,8 +373,8 @@ public class ControlNode implements Node {
         public void exec(ATFLRuntime runtime) {
             ControlNode newControlList = runtime.popStack();
             Stack<SymbolTable> newEnv = newControlList.getEnv();
+            if (newEnv == null) { newEnv = new Stack(); }
             Stack<SymbolTable> oldEnv = runtime.swapEnv(newEnv);
-            runtime.pushEnv(runtime.popStack());
             Stack<ControlNode> newControl = new Stack<ControlNode>();
             newControl.addAll(0, newControlList.getSubNodes());
             Stack<ControlNode> oldControl = runtime.swapControl(newControl);
@@ -549,6 +562,7 @@ public class ControlNode implements Node {
             runtime.swapEnv((Stack)runtime.popDump());
             runtime.swapControl((Stack)runtime.popDump());
             runtime.pushStack(retVal);
+            runtime.popEnv();
         }
     }
 
