@@ -6,14 +6,11 @@
 package org.atfl.runtime;
 import java.io.FileNotFoundException;
 import java.util.Stack;
-import java.util.Vector;
 import org.atfl.exception.ATFLRuntimeException;
-import org.atfl.exception.TranslatorException;
 import org.atfl.runtime.ControlNode.ControlNodeTag;
 import org.atfl.runtime.parser.ATFLParser;
 import org.atfl.runtime.parser.ParserNode;
 import org.atfl.runtime.translator.ATFLTranslator;
-import org.atfl.util.ListUtils;
 import org.atfl.util.SymbolTable;
 import org.atfl.util.TokenReader;
 
