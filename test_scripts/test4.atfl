@@ -1,0 +1,6 @@
+(set test (fun (x) (add x 1)))
+(set test2 (fun (x) (add (car x) 15)))
+
+(println (test 4))
+(println (test 255))
+(println (test2 (23 2 1)))

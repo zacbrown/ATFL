@@ -36,7 +36,8 @@ public class ATFLRuntime {
             try { parser.parse(); }
             catch (Exception ex) { ex.printStackTrace(); }
             ParserNode my_node = parser.getAST();
-            //my_node.print();
+            System.out.println("=============== AST ===============");
+            my_node.print();
             ATFLTranslator translator = new ATFLTranslator(my_node);
             try { translator.translateTop(); }
             catch (Exception ex) { ex.printStackTrace(); }
@@ -44,6 +45,8 @@ public class ATFLRuntime {
             reg_e = translator.getEnv();
         }
         catch (FileNotFoundException e) { e.printStackTrace(); }
+        System.out.println("=============== INIT VM STATE ===============");
+        this.dumpRegisters();
         this.execute();
     }
 

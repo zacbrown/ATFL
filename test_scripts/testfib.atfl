@@ -1,0 +1,7 @@
+(set fib
+    (fun (n)
+        (if (leq n 1)
+            n
+            (add (fib (sub n 1)) (fib (sub n 2))))))
+
+(println (fib 2))

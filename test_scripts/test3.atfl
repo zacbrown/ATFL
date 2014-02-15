@@ -1,0 +1,5 @@
+(println (add 1 ((fun (x)
+                 (if (atom x)
+                     x
+                     (car x))) (255 1) )))
+

@@ -1,0 +1,9 @@
+(if (eq (add 222334 2) 222336)
+    (println "222334 + 2 = 222336")
+    (println "222334 + 2 <> 222336"))
+
+(let (twolist (add s n) (mul p n))
+    (s car z)
+    (p car (cdr z))
+    (n 1)
+    (z (1 2 3 4)))
